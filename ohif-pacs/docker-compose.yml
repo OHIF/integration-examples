@@ -1,0 +1,19 @@
+version: '3.6'
+services:
+  mongo:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+
+  viewer:
+    image: ohif/viewer:latest
+    ports:
+      - "3000:3000"
+    links:
+      - mongo
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/ohif
+    extra_hosts:
+      - "pacsIP:192.168.1.11"
+    volumes:
+      - /opt/docker/ohif-viewer/app.json:/app/app.json

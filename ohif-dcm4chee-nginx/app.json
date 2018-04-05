@@ -11,9 +11,9 @@
 		    "dicomWeb": [
 		      {
 		        "name": "DCM4CHEE",
-		        "wadoUriRoot": "http://dcm4chee-arc:8080/dcm4chee-arc/aets/DCM4CHEE/wado",
-		        "qidoRoot": "http://dcm4chee-arc:8080/dcm4chee-arc/aets/DCM4CHEE/rs",
-		        "wadoRoot": "http://dcm4chee-arc:8080/dcm4chee-arc/aets/DCM4CHEE/rs",
+		        "wadoUriRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/wado",
+		        "qidoRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/rs",
+		        "wadoRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/rs",
 		        "qidoSupportsIncludeField": false,
 		        "imageRendering": "wadouri",
 		        "thumbnailRendering": "wadors",

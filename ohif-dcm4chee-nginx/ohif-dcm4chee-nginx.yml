@@ -16,64 +16,136 @@ services:
     image: ohif/viewer:latest
     ports:
       - "3000:3000"
-    links:
+    depends_on:
       - mongo
-      - dcm4chee-arc
+      - arc
     environment:
       - MONGO_URL=mongodb://mongo:27017/ohif
     volumes:
       - /opt/docker/ohif-dcm4che-nginx/app.json:/app/app.json
-  slapd:
-    image: dcm4che/slapd-dcm4chee:5.5.2
-    ports:
-      - "389:389"
-    env_file: docker-compose.env
-    volumes:
-      - /opt/docker/dcm4chee-arc/ldap:/var/lib/ldap
-      - /opt/docker/dcm4chee-arc/slapd.d:/etc/ldap/slapd.d
-  postgres:
-    image: dcm4che/postgres-dcm4chee:5.5
-    ports:
-      - "5432:5432"
-    env_file: docker-compose.env
-    volumes:
-      - /opt/docker/dcm4chee-arc/db:/var/lib/postgresql/data
   elasticsearch:
-    image: elasticsearch:2.3
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.0.0
+    environment:
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      TAKE_FILE_OWNERSHIP: 1
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
     ports:
       - "9200:9200"
       - "9300:9300"
     volumes:
       - /opt/docker/dcm4chee-arc/elasticsearch:/usr/share/elasticsearch/data
   kibana:
-    image: kibana:4.5
-    ports:
-      - "5601:5601"
-    links:
-      - elasticsearch:elasticsearch
+    image: docker.elastic.co/kibana/kibana-oss:6.0.0
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+    depends_on:
+      - elasticsearch
   logstash:
-    image: dcm4che/logstash-dcm4chee:5.5
+    image: dcm4che/logstash-dcm4chee:6.0.0-4
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
     ports:
       - "12201:12201/udp"
+      - "8514:8514/udp"
       - "8514:8514"
-    links:
-      - elasticsearch:elasticsearch
-  dcm4chee-arc:
-    image: dcm4che/dcm4chee-arc-psql:5.5.2-logstash-secure-ui
+    depends_on:
+      - elasticsearch
+  ldap:
+    image: dcm4che/slapd-dcm4chee:2.4.44-13.0
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://dockerhost:12201"
+        tag: slapd
+    ports:
+      - "389:389"
+    env_file: docker-compose.env
+    volumes:
+      - /opt/docker/dcm4chee-arc/ldap:/var/lib/ldap
+      - /opt/docker/dcm4chee-arc/slapd.d:/etc/ldap/slapd.d
+  keycloak:
+    image: dcm4che/keycloak:3.4.3-12.0-logstash
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://dockerhost:12201"
+        tag: keycloak
+    ports:
+      - "8880:8880"
+      - "8843:8843"
+      - "8990:8990"
+    env_file: docker-compose.env
+    environment:
+      HTTP_PORT: 8880
+      HTTPS_PORT: 8843
+      MANAGEMENT_HTTP_PORT: 8990
+      KEYCLOAK_WAIT_FOR: ldap:389 logstash:8514
+    depends_on:
+      - ldap
+      - logstash
+    volumes:
+      - /opt/docker/dcm4chee-arc/keycloak:/opt/keycloak/standalone
+  keycloak-proxy:
+    image: dcm4che/keycloak-proxy:3.4.3-1
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://dockerhost:12201"
+        tag: keycloak-proxy
+    ports:
+      - "8601:8601"
+      - "8643:8643"
+    env_file: docker-compose.env
+    environment:
+      HTTP_PORT: 8601
+      HTTPS_PORT: 8643
+    depends_on:
+      - logstash
+      - kibana
+      - keycloak
+  db:
+    image: dcm4che/postgres-dcm4chee:10.0-13
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://dockerhost:12201"
+        tag: postgres
+    ports:
+      - "5432:5432"
+    env_file: docker-compose.env
+    depends_on:
+      - logstash
+    volumes:
+      - /opt/docker/dcm4chee-arc/db:/var/lib/postgresql/data
+  arc:
+    image: dcm4che/dcm4chee-arc-psql:5.13.0-logstash-secure-ui
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://dockerhost:12201"
+        tag: dcm4chee-arc
     ports:
       - "8080:8080"
+      - "8443:8443"
       - "9990:9990"
       - "11112:11112"
       - "2575:2575"
     env_file: docker-compose.env
     environment:
-      JAVA_OPTS: "-Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true"
       WILDFLY_CHOWN: /opt/wildfly/standalone /storage
       WILDFLY_WAIT_FOR: ldap:389 db:5432 logstash:8514
-    links:
-      - slapd:ldap
-      - postgres:db
-      - logstash:logstash
+    depends_on:
+      - ldap
+      - keycloak
+      - db
+      - logstash
     volumes:
-      - /opt/docker/dcm4chee-arc/storage:/storage
       - /opt/docker/dcm4chee-arc/wildfly:/opt/wildfly/standalone
+      - /opt/docker/dcm4chee-arc/storage:/storage

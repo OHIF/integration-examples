@@ -8,10 +8,21 @@ services:
         - /opt/docker/ohif-dcm4che-nginx/site.conf:/etc/nginx/nginx.conf
     links:
         - viewer
+        - kibana
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://dockerhost:12201"
+        tag: ohif-nginx
   mongo:
     image: "mongo:latest"
     ports:
       - "27017:27017"
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://dockerhost:12201"
+        tag: ohif-mongodb
   viewer:
     image: ohif/viewer:latest
     ports:
@@ -23,6 +34,11 @@ services:
       - MONGO_URL=mongodb://mongo:27017/ohif
     volumes:
       - /opt/docker/ohif-dcm4che-nginx/app.json:/app/app.json
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://dockerhost:12201"
+        tag: ohif-viewer
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.0.0
     environment:

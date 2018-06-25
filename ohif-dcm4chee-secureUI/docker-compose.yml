@@ -1,0 +1,115 @@
+version: '3'
+services:
+  web:
+    image: nginx:latest
+    ports:
+        - "80:80"
+    volumes:
+        - /opt/docker/ohif-dcm4che-nginx/site.conf:/etc/nginx/nginx.conf
+    links:
+        - viewer
+    logging:
+      options:
+        tag: ohif-nginx
+  mongo:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+    logging:
+      options:
+        tag: ohif-mongodb
+  viewer:
+    image: ohif/viewer:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+      - arc
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/ohif
+    volumes:
+      - /opt/docker/ohif-dcm4che-nginx/app.json:/app/app.json
+    logging:
+      options:
+        tag: ohif-viewer
+  ldap:
+    image: dcm4che/slapd-dcm4chee:2.4.44-13.0
+    logging:
+      driver: json-file
+      options:
+        tag: slapd
+    ports:
+      - "389:389"
+    env_file: docker-compose.env
+    volumes:
+      - /opt/docker/dcm4chee-arc/ldap:/var/lib/ldap
+      - /opt/docker/dcm4chee-arc/slapd.d:/etc/ldap/slapd.d
+  keycloak:
+    image: dcm4che/keycloak:3.4.3-12.0
+    logging:
+      driver: json-file
+      options:
+        tag: keycloak
+    ports:
+      - "8880:8880"
+      - "8843:8843"
+      - "8990:8990"
+    env_file: docker-compose.env
+    environment:
+      HTTP_PORT: 8880
+      HTTPS_PORT: 8843
+      MANAGEMENT_HTTP_PORT: 8990
+      KEYCLOAK_WAIT_FOR: ldap:389
+    depends_on:
+      - ldap
+    volumes:
+      - /opt/docker/dcm4chee-arc/keycloak:/opt/keycloak/standalone
+  keycloak-proxy:
+    image: dcm4che/keycloak-proxy:3.4.3-1
+    logging:
+      driver: json-file
+      options:
+        tag: keycloak-proxy
+    ports:
+      - "8601:8601"
+      - "8643:8643"
+    env_file: docker-compose.env
+    environment:
+      HTTP_PORT: 8601
+      HTTPS_PORT: 8643
+    depends_on:
+      - keycloak
+  db:
+    image: dcm4che/postgres-dcm4chee:10.0-13
+    logging:
+      driver: json-file
+      options:
+        tag: postgres
+    ports:
+      - "5432:5432"
+    env_file: docker-compose.env
+    volumes:
+      - /opt/docker/dcm4chee-arc/db:/var/lib/postgresql/data
+  arc:
+    image: dcm4che/dcm4chee-arc-psql:5.13.0-secure-ui
+    logging:
+      driver: json-file
+      options:
+        tag: dcm4chee-arc
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "9990:9990"
+      - "11112:11112"
+      - "2575:2575"
+    env_file: docker-compose.env
+    environment:
+      WILDFLY_CHOWN: /opt/wildfly/standalone /storage
+      WILDFLY_WAIT_FOR: ldap:389 db:5432
+    depends_on:
+      - ldap
+      - keycloak
+      - db
+    volumes:
+      - /opt/docker/dcm4chee-arc/wildfly:/opt/wildfly/standalone
+      - /opt/docker/dcm4chee-arc/storage:/storage

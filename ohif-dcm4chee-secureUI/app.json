@@ -1,0 +1,37 @@
+{
+  "apps" : [{
+    "name"        : "ohif-viewer",
+    "script"      : "main.js",
+    "watch"       : true,
+    "merge_logs"  : true,
+    "cwd"         : "/app/bundle/",
+    "env": {
+    	"METEOR_SETTINGS": {
+		  "servers": {
+		    "dicomWeb": [
+		      {
+		        "name": "DCM4CHEE",
+		        "wadoUriRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/wado",
+		        "qidoRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/rs",
+		        "wadoRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/rs",
+		        "qidoSupportsIncludeField": false,
+		        "imageRendering": "wadouri",
+		        "thumbnailRendering": "wadors",
+		        "requestOptions": {
+		          "auth": "admin:admin",
+		          "logRequests": true,
+		          "logResponses": false,
+		          "logTiming": true
+		        }
+		      }
+		    ]
+		  },
+		  "defaultServiceType": "dicomWeb",
+		  "public": {},
+		  "proxy": {
+		    "enabled": true
+		  }
+		}
+    }
+  }]
+}

@@ -9,15 +9,13 @@ services:
     links:
         - viewer
     logging:
-      options:
-        tag: ohif-nginx
+      driver: json-file
   mongo:
     image: "mongo:latest"
     ports:
       - "27017:27017"
     logging:
-      options:
-        tag: ohif-mongodb
+      driver: json-file
   viewer:
     image: ohif/viewer:latest
     ports:
@@ -30,14 +28,11 @@ services:
     volumes:
       - /opt/docker/ohif-dcm4che-nginx/app.json:/app/app.json
     logging:
-      options:
-        tag: ohif-viewer
+      driver: json-file
   ldap:
     image: dcm4che/slapd-dcm4chee:2.4.44-13.0
     logging:
       driver: json-file
-      options:
-        tag: slapd
     ports:
       - "389:389"
     env_file: docker-compose.env
@@ -48,8 +43,6 @@ services:
     image: dcm4che/keycloak:3.4.3-12.0
     logging:
       driver: json-file
-      options:
-        tag: keycloak
     ports:
       - "8880:8880"
       - "8843:8843"
@@ -68,8 +61,6 @@ services:
     image: dcm4che/keycloak-proxy:3.4.3-1
     logging:
       driver: json-file
-      options:
-        tag: keycloak-proxy
     ports:
       - "8601:8601"
       - "8643:8643"
@@ -83,8 +74,6 @@ services:
     image: dcm4che/postgres-dcm4chee:10.0-13
     logging:
       driver: json-file
-      options:
-        tag: postgres
     ports:
       - "5432:5432"
     env_file: docker-compose.env
@@ -94,8 +83,6 @@ services:
     image: dcm4che/dcm4chee-arc-psql:5.13.0-secure-ui
     logging:
       driver: json-file
-      options:
-        tag: dcm4chee-arc
     ports:
       - "8080:8080"
       - "8443:8443"

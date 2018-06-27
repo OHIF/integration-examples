@@ -8,6 +8,7 @@ services:
         - /opt/docker/ohif-dcm4che-nginx/site.conf:/etc/nginx/nginx.conf
     links:
         - viewer
+        - arc
     logging:
       driver: json-file
   mongo:
@@ -18,8 +19,6 @@ services:
       driver: json-file
   viewer:
     image: ohif/viewer:latest
-    ports:
-      - "3000:3000"
     depends_on:
       - mongo
       - arc
@@ -57,19 +56,6 @@ services:
       - ldap
     volumes:
       - /opt/docker/dcm4chee-arc/keycloak:/opt/keycloak/standalone
-  keycloak-proxy:
-    image: dcm4che/keycloak-proxy:3.4.3-1
-    logging:
-      driver: json-file
-    ports:
-      - "8601:8601"
-      - "8643:8643"
-    env_file: docker-compose.env
-    environment:
-      HTTP_PORT: 8601
-      HTTPS_PORT: 8643
-    depends_on:
-      - keycloak
   db:
     image: dcm4che/postgres-dcm4chee:10.0-13
     logging:

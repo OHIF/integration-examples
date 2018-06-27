@@ -24,6 +24,7 @@ services:
       - arc
     environment:
       - MONGO_URL=mongodb://mongo:27017/ohif
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
     volumes:
       - /opt/docker/ohif-dcm4che-nginx/app.json:/app/app.json
     logging:
@@ -66,7 +67,7 @@ services:
     volumes:
       - /opt/docker/dcm4chee-arc/db:/var/lib/postgresql/data
   arc:
-    image: dcm4che/dcm4chee-arc-psql:5.13.0-secure-ui
+    image: dcm4che/dcm4chee-arc-psql:5.13.3-secure
     logging:
       driver: json-file
     ports:

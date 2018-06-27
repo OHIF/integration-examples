@@ -6,19 +6,19 @@
     "merge_logs"  : true,
     "cwd"         : "/app/bundle/",
     "env": {
+    	"ROOT_URL": "http://dockerhost",
     	"METEOR_SETTINGS": {
 		  "servers": {
 		    "dicomWeb": [
 		      {
 		        "name": "DCM4CHEE",
-		        "wadoUriRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/wado",
-		        "qidoRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/rs",
-		        "wadoRoot": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE/rs",
+		        "wadoUriRoot": "http://dockerhost/dcm4chee-arc/aets/DCM4CHEE/wado",
+		        "qidoRoot": "http://dockerhost/dcm4chee-arc/aets/DCM4CHEE/rs",
+		        "wadoRoot": "http://dockerhost/dcm4chee-arc/aets/DCM4CHEE/rs",
 		        "qidoSupportsIncludeField": false,
 		        "imageRendering": "wadouri",
 		        "thumbnailRendering": "wadors",
 		        "requestOptions": {
-		          "auth": "admin:admin",
 		          "logRequests": true,
 		          "logResponses": false,
 		          "logTiming": true
@@ -29,7 +29,17 @@
 		  "defaultServiceType": "dicomWeb",
 		  "public": {},
 		  "proxy": {
-		    "enabled": true
+		    "enabled": false
+		  },
+		  "keycloak": {
+		    "realmName": "dcm4che",
+		    "authServerUrl": "http://dockerhost/auth",
+		    "authRedirectUri": "/studylist",
+		    "sslRequired": "none",
+		    "clientId": "ohif-viewer",
+		    "clientSecret": "822d7f77-d6fb-40e2-80e4-b99bb3dc6aca",
+		    "loginStyle": "popup",
+		    "realmPublicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlmO8/oyDelHFNVZrtlvDjCnN0U6r2PaiYbTl8ytyZizq8FXB4LrwmgWsprojDRMauwzST0AUNE8dC1jJ89CoGAveNhrnCkMVzuXy0mMZt82HHDqDLGY1AKfLD756CuuTmt69ul2OTqpk5uIi8v7cdtaqIFdCRYzqSIJ6jMfJ+nk6FuEd2bBAUoAbHwAljcxeRV8ho7nWKEe1g8ZkYEqUIKYhfaLx36Q7VxDNOdmSpdpzKdoWSURGPFuTOKekg2Tuqgv9M40ceK9konDktZplbwh7TXZOJy9gC6LlU3kosBbtIP+RWtdwcbdU7BZJx1zTOroA0hyRPDTQBR4Nkm5kvwIDAQAB"
 		  }
 		}
     }

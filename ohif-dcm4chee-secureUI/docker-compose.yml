@@ -18,7 +18,7 @@ services:
     logging:
       driver: json-file
   viewer:
-    image: ohif/viewer:latest
+    image: ohif/viewer-keycloak:latest
     depends_on:
       - mongo
       - arc

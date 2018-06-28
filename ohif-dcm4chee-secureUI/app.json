@@ -27,13 +27,18 @@
 		    ]
 		  },
 		  "defaultServiceType": "dicomWeb",
-		  "public": {},
+		  "public": {
+		  	"custom": {
+		  	  "keycloak": {
+			    "realmName": "dcm4che",
+			    "authServerUrl": "http://dockerhost/auth",
+		  	  }
+		  	}
+		  },
 		  "proxy": {
 		    "enabled": false
 		  },
 		  "keycloak": {
-		    "realmName": "dcm4che",
-		    "authServerUrl": "http://dockerhost/auth",
 		    "authRedirectUri": "/studylist",
 		    "sslRequired": "none",
 		    "clientId": "ohif-viewer",

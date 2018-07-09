@@ -16,4 +16,4 @@ services:
     extra_hosts:
       - "pacsIP:192.168.1.11"
     volumes:
-      - /opt/docker/ohif-viewer/app.json:/app/app.json
+      - ./app.json:/app/app.json
